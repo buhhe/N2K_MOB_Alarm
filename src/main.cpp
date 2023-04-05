@@ -12,7 +12,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// NMEA2000 Man over board button
+// NMEA2000 Man over board button--
 // Version 1.0, 18.03.2023, buhhe (https://github.com/buhhe)
 // https://github.com/buhhe/NMEA200-Man-Over-Board-Button
 
