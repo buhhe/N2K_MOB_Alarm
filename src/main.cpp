@@ -12,9 +12,17 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+
+
+
 // NMEA2000 Man over board button
 // Version 1.0, 18.03.2023, buhhe (https://github.com/buhhe)
-// https://github.com/buhhe/NMEA200-Man-Over-Board-Button
+// https://github.com/buhhe/NMEA2000-Man-Over-Board-Button
+// Libraries needed:
+//        - https://github.com/ttlappalainen/NMEA2000
+//        - https://github.com/ttlappalainen/NMEA2000_esp32
+//        - https://github.com/ttlappalainen/NMEA0183
+//
 
 
 #define ESP32_CAN_TX_PIN GPIO_NUM_5  // Set CAN TX port to 5 
@@ -22,15 +30,15 @@
 
 #include <Arduino.h>
 #include <Preferences.h>
-#include <NMEA2000_CAN.h>  // This will automatically choose right CAN library and create suitable NMEA2000 object
+#include <NMEA2000_CAN.h>  
 #include <N2kMessages.h>
 
 // to be printed to USB-serial
-const char Description[] = "MOB-Alarm Button. Comes without any warranty or committed reliability. Only for test purposes.";
+const char Description[] = "MOB-Alarm Button. Comes without any warranty or reliability. Only for test purposes!";
 
 
 #define ALARM_BUTTON 13     // GPIO pin to be connected to GND when the alarm button is pressed
-#define MYMMSI  211794060     // set your MMSI in here
+#define MYMMSI  123456789   // set your MMSI in here
 
 int NodeAddress;            // To store last Node Address
 Preferences preferences;    // Nonvolatile storage on ESP32 - To store LastDeviceAddress
@@ -61,15 +69,14 @@ const unsigned long  ReceiveMessages[] PROGMEM = { 129029L, 129026L, 0};  // get
 const unsigned long TransmitMessages[] PROGMEM = {127233L, 0};            // send man over board alarm
 
 // forward declarations
-void          SayHello(void);
-bool          IsTimeToUpdate(unsigned long);
-unsigned long InitNextUpdate(unsigned long, unsigned long);
+void          SayHello(void);           
 void          SendN2kMOBAlarm(void);
 void          CheckSourceAddressChange(void);
 void          MyParsePGN129029(const tN2kMsg);
 void          MyParsePGN129026(const tN2kMsg);
 void          MyHandleNMEA2000Msg(const tN2kMsg &);
 void          DispMessage();
+
 
 
 //*****************************************************************************
@@ -110,7 +117,7 @@ void setup()
                                  100, // Manufacturer's product code
                                  "MOB-Alarm Button",  // Manufacturer's Model ID
                                  "SW-Vers:  1.0 (2023-03-18)",  // Manufacturer's Software version code
-                                 "Mod-Vers: 1.0 (2023-03-18)" // Manufacturer's Model version
+                                 "Mod-Vers: 1.0 (buhhe)" // Manufacturer's Model version
                                 );
   // Set device information
   NMEA2000.SetDeviceInformation(id, // Unique number. Use e.g. Serial number.
