@@ -12,18 +12,15 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
-
-
 // NMEA2000 Man over board button
-// Version 1.0, 18.03.2023, buhhe (https://github.com/buhhe)
+// Version 1.0, 19.04.2023, buhhe (https://github.com/buhhe)
 // https://github.com/buhhe/NMEA2000-Man-Over-Board-Button
 // Libraries needed:
 //        - https://github.com/ttlappalainen/NMEA2000
 //        - https://github.com/ttlappalainen/NMEA2000_esp32
 //        - https://github.com/ttlappalainen/NMEA0183
 //
-
+//
 
 #define ESP32_CAN_TX_PIN GPIO_NUM_5  // Set CAN TX port to 5 
 #define ESP32_CAN_RX_PIN GPIO_NUM_4  // Set CAN RX port to 4
@@ -33,12 +30,13 @@
 #include <NMEA2000_CAN.h>  
 #include <N2kMessages.h>
 
-// to be printed to USB-serial
+// to be printed out to USB-serial
 const char Description[] = "MOB-Alarm Button. Comes without any warranty or reliability. Only for test purposes!";
 
 
-#define ALARM_BUTTON 13     // GPIO pin to be connected to GND when the alarm button is pressed
-#define MYMMSI  123456789   // set your MMSI in here
+#define ALARM_BUTTON    13          // GPIO pin to be connected to GND when the alarm button is pressed
+#define MYMMSI          123456789   // set your MMSI in here
+#define ACTIVATION_TIME  5          // seconds the button has to be pressed to activate the alarm
 
 int NodeAddress;            // To store last Node Address
 Preferences preferences;    // Nonvolatile storage on ESP32 - To store LastDeviceAddress
@@ -46,7 +44,7 @@ Preferences preferences;    // Nonvolatile storage on ESP32 - To store LastDevic
 // structure which contains all data needed to set the mob alarm
 struct PGN127233
 {
-  unsigned char                     SID;                      // sequenz id
+  unsigned char                     SID;                      // sequence id
   uint32_t                          EmitterID;                // Identifier for each MOB emitter, unique to the vessel
   tN2kMOBStatus                     MOBStatus;                // MOBStatus: MOBEmitterActivated=0, ManualOnBoardMOBButtonActivation=1, TestMode=2, MOBNotActive=3
   double                            ActivationTime;           // Time of day (UTC) when MOB was activated
@@ -62,9 +60,10 @@ struct PGN127233
   tN2kMOBEmitterBatteryStatus       MOBEmitterBatteryStatus;  // Battery status: Good=0, Low=1
 } ;
 
+
 PGN127233 PGNOut;
 
-// Set the information for other bus devices, which messages we support
+// Set the information for other devices on the bus which messages we support
 const unsigned long  ReceiveMessages[] PROGMEM = { 129029L, 129026L, 0};  // get navigational data
 const unsigned long TransmitMessages[] PROGMEM = {127233L, 0};            // send man over board alarm
 
@@ -116,7 +115,7 @@ void setup()
   NMEA2000.SetProductInformation("1", // Manufacturer's Model serial code
                                  100, // Manufacturer's product code
                                  "MOB-Alarm Button",  // Manufacturer's Model ID
-                                 "SW-Vers:  1.0 (2023-03-18)",  // Manufacturer's Software version code
+                                 "SW-Vers:  1.0 (2023-04-19)",  // Manufacturer's Software version code
                                  "Mod-Vers: 1.0 (buhhe)" // Manufacturer's Model version
                                 );
   // Set device information
@@ -145,13 +144,14 @@ void setup()
 void loop() 
 {
   static unsigned long myTime;
+
   NMEA2000.ParseMessages();
   CheckSourceAddressChange();
 
   if (digitalRead(ALARM_BUTTON)==LOW)
   {
     myTime = millis();
-    while ( digitalRead(ALARM_BUTTON) == LOW && (millis() < myTime + 5000))
+    while ( digitalRead(ALARM_BUTTON) == LOW && (millis() < myTime + ACTIVATION_TIME*1000))
     {}
     if (digitalRead(ALARM_BUTTON)==LOW)
     {
